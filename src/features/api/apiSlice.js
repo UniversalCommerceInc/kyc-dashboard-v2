@@ -4,7 +4,7 @@ export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
     // baseUrl: "https://apiservice.ukyc.universalcommerce.io/",
-    baseUrl: "http://localhost:3010/",
+    baseUrl: "https://apiservice.ukycv2.universalcommerce.io/",
 
     prepareHeaders: (headers, { getState }) => {
       const token = getState().auth.token;
