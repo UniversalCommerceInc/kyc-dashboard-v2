@@ -159,7 +159,7 @@ const CustomerDetail = () => {
 
 // Document → OCR data
 const ocrScore = kyc?.moderation?.document?.ocr?.recognitionResult?.data?.[0]?.data?.score || 0;
-const mismatchResults = kyc?.moderation?.document?.ocr?.mismatchResults || {};
+const mismatchResults = kyc?.moderation?.document?.ocr?.mismatchResults;
 const recognizedOcrData = kyc?.moderation?.document?.ocr?.recognitionResult?.data?.[0]?.data?.ocr || {};
 
 const { portrait, ghostPortrait, documentFrontSide } =
@@ -555,29 +555,40 @@ const isMatch = faceComparisonResult?.toLowerCase() === "same";
                   </div>
 
                   {/* Mismatch or Verified Fields */}
-                  {mismatchResults ? (
+                  {!kyc.moderation.document.ocr.isMatch ? (
                     // ---------- Mismatch Results ----------
                     <div className="space-y-4">
-                      {Object.entries(mismatchResults).map(([field, details]) => (
-                        <div
-                          key={field}
-                          className="p-4 sm:p-6 rounded-2xl shadow-lg bg-gradient-to-br from-red-100 to-red-200 border-l-8 border-red-500 transition-transform hover:scale-[1.01]"
-                        >
-                          <h4 className="text-lg sm:text-xl font-bold text-red-700 capitalize mb-1">
-                            {field.replace(/([A-Z])/g, " $1")}
-                          </h4>
-                          <p className="text-sm sm:text-base text-gray-800">
-                            <strong>OCR Value:</strong> {details.ocrValue}
-                          </p>
-                          <p className="text-sm sm:text-base text-gray-800">
-                            <strong>KYC Value:</strong> {details.kycValue}
-                          </p>
-                          <p className="text-sm sm:text-base text-red-600 italic mt-1">
-                            {details.reason}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
+                    {Object.entries(mismatchResults).map(([field, details]) => (
+                      <div
+                        key={field}
+                        className="p-4 sm:p-6 rounded-2xl shadow-lg bg-gradient-to-br from-red-100 to-red-200 border-l-8 border-red-500 transition-transform hover:scale-[1.01]"
+                      >
+                        <h4 className="text-lg sm:text-xl font-bold text-red-700 capitalize mb-1">
+                          {field.replace(/([A-Z])/g, " $1")}
+                        </h4>
+                  
+                        {/* For the address field, show the similarity score badge */}
+                        {field === "address" && details.similarityScore !== undefined && (
+                          <div className="mb-2">
+                            <div className="inline-block px-4 py-2 bg-blue-500 text-white rounded-full">
+                              Address Similarity Score: {(details.similarityScore * 100).toFixed(1)}%
+                            </div>
+                          </div>
+                        )}
+                  
+                        <p className="text-sm sm:text-base text-gray-800">
+                          <strong>OCR Value:</strong> {details.ocrValue}
+                        </p>
+                        <p className="text-sm sm:text-base text-gray-800">
+                          <strong>KYC Value:</strong> {details.kycValue}
+                        </p>
+                        <p className="text-sm sm:text-base text-red-600 italic mt-1">
+                          {details.reason}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  
                   ) : (
                     // ---------- All Verified + "See More" ----------
                     <div>
@@ -585,7 +596,7 @@ const isMatch = faceComparisonResult?.toLowerCase() === "same";
                         All fields have been verified and matched.
                       </p>
 
-                      <div className="flex justify-center mt-4">
+                      {/* <div className="flex justify-center mt-4">
                         <button
                           onClick={() => setShowOcrDetails(!showOcrDetails)}
                           className="px-5 py-2 bg-green-600 text-white rounded-full font-bold shadow hover:bg-green-700 transition-transform transform hover:scale-105"
@@ -594,10 +605,10 @@ const isMatch = faceComparisonResult?.toLowerCase() === "same";
                             ? "Hide Recognized Data & Images"
                             : "Show Recognized Data & Images"}
                         </button>
-                      </div>
+                      </div> */}
 
                       {/* Show recognized data + base64 images when toggled */}
-                      {showOcrDetails && (
+                      {/* {showOcrDetails && ( */}
                         <div className="mt-8 space-y-8">
                           {/* Recognized OCR Data */}
                           <div>
@@ -605,21 +616,20 @@ const isMatch = faceComparisonResult?.toLowerCase() === "same";
                               Recognized Data
                             </h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              {Object.entries(recognizedOcrData) .filter(([field, dataObj]) => dataObj && dataObj.validState !== true).map(
-                                ([field, value]) => (
-                                  <div
-                                    key={field}
-                                    className="p-4 sm:p-6 rounded-2xl shadow-lg bg-gradient-to-br from-gray-100 to-gray-200 border-l-4 border-green-300 transition-transform hover:scale-[1.01]"
-                                  >
-                                    <h5 className="text-lg sm:text-xl font-semibold text-green-700 capitalize mb-2">
-                                      {field.replace(/([A-Z])/g, " $1")}
-                                    </h5>
-                                    <p className="text-gray-800 break-words">
-                                      {String(value)}
-                                    </p>
-                                  </div>
-                                )
-                              )}
+                            {Object.entries(recognizedOcrData).filter(([field]) => field !== "validState").map(([field, value]) => (
+  <div
+    key={field}
+    className="p-4 sm:p-6 rounded-2xl shadow-lg bg-gradient-to-br from-gray-100 to-gray-200 border-l-4 border-green-300 transition-transform hover:scale-[1.01]"
+  >
+    <h5 className="text-lg sm:text-xl font-semibold text-green-700 capitalize mb-2">
+      {field.replace(/([A-Z])/g, " $1")}
+    </h5>
+    <p className="text-gray-800 break-words">
+      {String(value)}
+    </p>
+  </div>
+))}
+
                             </div>
                           </div>
 
@@ -628,7 +638,7 @@ const isMatch = faceComparisonResult?.toLowerCase() === "same";
                              {/* Toggle for Additional OCR Data */}
                         
                         </div>
-                      )}
+                      {/* )} */}
                     </div>
                   )}
                        {/* <div className="mt-6 text-center">
